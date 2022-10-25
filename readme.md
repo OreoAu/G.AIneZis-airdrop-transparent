@@ -64,7 +64,6 @@ See:
 
 Using hardhat-deploy with Chai and Mocha for the tests, and solidity-coverage to evaluate test coverage, with these results:
 
--------------------------|----------|----------|----------|----------|----------------|
 File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
 -------------------------|----------|----------|----------|----------|----------------|
  src/                    |      100 |      100 |      100 |      100 |                |
@@ -72,7 +71,6 @@ File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered 
   MyTokenUpgradeable.sol |      100 |      100 |      100 |      100 |                |
 -------------------------|----------|----------|----------|----------|----------------|
 All files                |      100 |      100 |      100 |      100 |                |
--------------------------|----------|----------|----------|----------|----------------|
 
 See:
 * https://itnext.io/how-to-make-tests-using-chai-and-mocha-e9db7d8d48bc, Chai and Mocha tutorial
