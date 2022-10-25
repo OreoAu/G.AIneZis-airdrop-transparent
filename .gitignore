@@ -1,7 +1,11 @@
 artifacts/
 cache/
+coverage.json
+coverage/
 node_modules/
 .env
+.nycrc
+.nyc_output/
 .vscode/
 *.log
 *.lock

@@ -1,8 +1,9 @@
 import { HardhatUserConfig } from 'hardhat/types';
 import 'hardhat-deploy';
-import 'hardhat-deploy-ethers';
+import '@nomiclabs/hardhat-ethers';
 import "@nomicfoundation/hardhat-chai-matchers";
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
+import 'solidity-coverage'
 
 const config: HardhatUserConfig = {
     solidity: {

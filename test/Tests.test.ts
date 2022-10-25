@@ -1,9 +1,9 @@
 import { expect } from "./chai-setup";
-import { setupUsers, setupUser } from './utils';
-import { ethers, deployments, getNamedAccounts, getUnnamedAccounts } from 'hardhat';
+import { setupUsers, setupUser } from "./utils";
+import { ethers, deployments, getNamedAccounts, getUnnamedAccounts } from "hardhat";
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
-import { MerkleTree } from 'merkletreejs';
-import keccak256 from 'keccak256';
+import { MerkleTree } from "merkletreejs";
+import keccak256 from "keccak256";
 
 async function setup() {
     await deployments.fixture(["Token"]);
@@ -31,8 +31,8 @@ async function setup() {
 }
 
 describe("Token contract", function () {
-    it("Should be upgradable, only by Admin", async function () {
-        const { Token, Admin, TokenImplementation, Token2, users, deployer, upgradesAdmin } = await setup();
+    it("Should be upgradeable, only by Admin", async function () {
+        const { Token, Admin, TokenImplementation, Token2, upgradesAdmin } = await setup();
         expect(await upgradesAdmin.Admin.getProxyImplementation(Token.address)).to.equal(TokenImplementation.address);  // "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0");
         await (expect(Admin.upgrade(Token.address, Token2.address))).to.be.revertedWith("Ownable: caller is not the owner");
         await (expect(upgradesAdmin.Admin.upgrade(Token.address, Token2.address))).to.emit(Token, "Upgraded").withArgs(Token2.address);
@@ -48,6 +48,15 @@ describe("Token contract", function () {
         const { Token, tokenOwner } = await setup();
         const ownerBalance = await Token.balanceOf(tokenOwner.address);
         expect(await Token.totalSupply()).to.equal(ownerBalance);
+    });
+
+    it("Should be able to mint, only owner", async function () {
+        const { Token, tokenOwner } = await setup();
+        const ownerBalance = await Token.balanceOf(tokenOwner.address);
+        await (expect(Token.mint(tokenOwner.address, 100))).to.be.revertedWith("Ownable: caller is not the owner");
+        await tokenOwner.Token.mint(tokenOwner.address, 100);
+        expect(await Token.totalSupply()).to.equal(Number(ownerBalance) + 100);
+        expect(await Token.balanceOf(tokenOwner.address)).to.equal(Number(ownerBalance) + 100);
     });
 
     it("Should be able to burn, only owner", async function () {
@@ -127,6 +136,10 @@ describe("Token contract", function () {
         await expect(tokenOwner.Token.increaseAllowance(users[1].address, 100)).to.be.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
         expect(await Token.allowance(tokenOwner.address, users[1].address)).to.equal(maxUint256);
     });
+    it("Should not initialize twice", async function () {
+        const { Token, upgradesAdmin, tokenOwner } = await setup();
+        await expect(upgradesAdmin.Token.initialize(tokenOwner.address, 1000)).to.be.revertedWith("Initializable: contract is already initialized");
+    });
 });
 
 describe("IERC20 metadata functions", function () {
@@ -134,10 +147,10 @@ describe("IERC20 metadata functions", function () {
         const { Token } = await setup();
         // Check name
         const name = await Token.name();
-        expect(name).to.equal('Mojo');
+        expect(name).to.equal("Mojo");
         // Check symbol
         const symbol = await Token.symbol();
-        expect(symbol).to.equal('MOJ');
+        expect(symbol).to.equal("MOJ");
         // Check decimals
         const decimals = await Token.decimals();
         expect(decimals).to.equal(18);
@@ -145,25 +158,26 @@ describe("IERC20 metadata functions", function () {
 });
 
 describe("Airdrop contract", function () {
-    it("Should be upgradable, only by Admin", async function () {
+    it("Should be upgradeable, only by Admin", async function () {
         const { Airdrop, Admin, AirdropImplementation, Airdrop2, upgradesAdmin } = await setup();
         expect(await Admin.getProxyImplementation(Airdrop.address)).to.equal(AirdropImplementation.address);
         await (expect(Admin.upgrade(Airdrop.address, Airdrop2.address))).to.be.revertedWith("Ownable: caller is not the owner");
         await (expect(upgradesAdmin.Admin.upgrade(Airdrop.address, Airdrop2.address))).to.emit(Airdrop, "Upgraded").withArgs(Airdrop2.address);
         expect(await upgradesAdmin.Admin.getProxyImplementation(Airdrop.address)).to.equal(Airdrop2.address);
     });
-    it("Should have the upgradable token associated", async function () {
+    it("Should have the upgradeable token associated", async function () {
         const { Token, Airdrop, users, deployer } = await setup();
         expect(await Airdrop.token()).to.equal(Token.address);
     });
     describe("Airdrop functionality", function () {
-        it("Should create an allocation", async function () {
+        it("Should create an allocation, only owner", async function () {
             const { Token, Airdrop, users, deployer, tokenOwner, merkleTree } = await setup();
             await tokenOwner.Token.transfer(deployer.address, 1000);
             await expect(deployer.Token.approve(Airdrop.address, 1000)).to.emit(Token, "Approval").withArgs(deployer.address, Airdrop.address, 1000);
             expect(await Token.allowance(deployer.address, Airdrop.address)).to.equal(1000);
             const merkleRoot = merkleTree.getRoot();
-            await expect(Airdrop.seedNewAllocations(merkleRoot, 100)).to.emit(Airdrop, "TrancheAdded").withArgs(0, "0x" + merkleRoot.toString('hex'), 100);
+            await expect(users[0].Airdrop.seedNewAllocations(merkleRoot, 100)).to.be.revertedWith("Ownable: caller is not the owner");
+            await expect(Airdrop.seedNewAllocations(merkleRoot, 100)).to.emit(Airdrop, "TrancheAdded").withArgs(0, "0x" + merkleRoot.toString("hex"), 100);
             expect(await Token.balanceOf(Airdrop.address)).to.equal(100);
             const leaf = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10]));
             const merkleProof = merkleTree.getHexProof(leaf);
@@ -186,11 +200,12 @@ describe("Airdrop contract", function () {
             await expect(Airdrop.claimWeek(users[1].address, 0, 10, merkleProof)).to.emit(Airdrop, "Claimed").withArgs(users[1].address, 0, 10);
             expect(await Token.balanceOf(users[1].address)).to.equal(10);
             expect(await Token.balanceOf(Airdrop.address)).to.equal(90);
-            await expect(Airdrop.claimWeek(users[1].address, 0, 10, merkleProof)).to.be.revertedWith('LP has already claimed');
+            await expect(Airdrop.claimWeek(users[1].address, 0, 10, merkleProof)).to.be.revertedWith("LP has already claimed");
             expect(await Token.balanceOf(users[1].address)).to.equal(10);
             await expect(Airdrop.claimWeek(users[2].address, 0, 10, merkleProof)).to.be.revertedWith("Incorrect merkle proof");
             expect(await Token.balanceOf(users[2].address)).to.equal(0);
             expect(await Token.balanceOf(Airdrop.address)).to.equal(90);
+            await expect(Airdrop.claimWeek(users[1].address, 1, 10, merkleProof)).to.be.revertedWith("Week cannot be in the future");
         });
         it("Should expire the tranch and not allow more claims for it", async function () {
             const { Token, Airdrop, users, deployer, tokenOwner, merkleTree } = await setup();
@@ -222,6 +237,9 @@ describe("Airdrop contract", function () {
             const leaf = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10]));
             const merkleProof0 = merkleTree0.getHexProof(leaf);
             const merkleProof1 = merkleTree1.getHexProof(leaf);
+            await expect(Airdrop.claimWeeks(users[1].address, [0, 1], [10, 10], [merkleProof0])).to.be.revertedWith("Mismatching inputs");
+            await expect(Airdrop.claimWeeks(users[1].address, [0, 1], [10], [merkleProof0, merkleProof1])).to.be.revertedWith("Mismatching inputs");
+            await expect(Airdrop.claimWeeks(users[1].address, [0], [10, 10], [merkleProof0, merkleProof1])).to.be.revertedWith("Mismatching inputs");
             await expect(Airdrop.claimWeeks(users[1].address, [0, 1], [10, 10], [merkleProof0, merkleProof1]))
                 .to.emit(Airdrop, "Claimed").withArgs(users[1].address, 0, 10)
                 .to.emit(Airdrop, "Claimed").withArgs(users[1].address, 1, 10);
@@ -231,6 +249,28 @@ describe("Airdrop contract", function () {
             const merkleProof01 = merkleTree1.getHexProof(leaf0);
             await expect(Airdrop.claimWeeks(users[0].address, [0, 1], [10, 10], [merkleProof00, merkleProof01])).to.be.revertedWith("Incorrect merkle proof");
             expect(await Token.balanceOf(users[0].address)).to.equal(0);
+        });
+        it("Should not attempt to transfer if the registered address has 0 assigned", async function () {
+            const { Token, Airdrop, users, deployer, tokenOwner } = await setup();
+            const list = [ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 100]), ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 0])];
+            const merkleTree = new MerkleTree(list, keccak256, { hashLeaves: true, sortPairs: true });
+            await tokenOwner.Token.transfer(deployer.address, 1000);
+            await deployer.Token.approve(Airdrop.address.toLowerCase(), 1000);
+            await Airdrop.seedNewAllocations(merkleTree.getRoot(), 100);
+            const leaf0 = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 100]));
+            const merkleProof0 = merkleTree.getHexProof(leaf0);
+            await expect(Airdrop.claimWeek(users[0].address, 0, 100, merkleProof0)).to.emit(Airdrop, "Claimed").withArgs(users[0].address, 0, 100);
+            const leaf1 = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 0]));
+            const merkleProof1 = merkleTree.getHexProof(leaf1);
+            await expect(Airdrop.claimWeek(users[1].address, 0, 0, merkleProof1)).to.be.revertedWith("No balance would be transferred - not going to waste your gas");
+        });
+        it("Should not initialize twice", async function () {
+            const { Airdrop, upgradesAdmin, Token } = await setup();
+            await expect(upgradesAdmin.Airdrop.initialize(Token.address)).to.be.revertedWith("Initializable: contract is already initialized");
+        });
+        it("Should not set token other than the owner", async function () {
+            const { Airdrop, upgradesAdmin, Token } = await setup();
+            await expect(upgradesAdmin.Airdrop.setToken(Token.address)).to.be.revertedWith("Ownable: caller is not the owner");
         });
     });
 });

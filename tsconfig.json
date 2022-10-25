@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
+        "sourceMap": true,
         "strict": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
@@ -12,5 +13,8 @@
         "hardhat.config.ts",
         "./deploy",
         "./test",
+    ],
+    "files": [
+        "./hardhat.config.ts"
     ]
 }
