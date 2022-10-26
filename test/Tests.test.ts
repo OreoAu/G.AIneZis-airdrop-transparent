@@ -5,30 +5,32 @@ import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "keccak256";
 
-async function setup() {
-    await deployments.fixture(["Token"]);
-    const { deployer, tokenOwner, upgradesAdmin } = await getNamedAccounts();
-    const contracts = {
-        Admin: await ethers.getContract("DefaultProxyAdmin"),
-        Token: await ethers.getContract("MyTokenUpgradeable"),
-        TokenImplementation: await ethers.getContract("MyTokenUpgradeable_Implementation"),
-        Token2: await ethers.getContract("Token2"),
-        Airdrop: await ethers.getContract("AirdropUpgradeable"),
-        AirdropImplementation: await ethers.getContract("AirdropUpgradeable_Implementation"),
-        Airdrop2: await ethers.getContract("Airdrop2"),
+const setup = deployments.createFixture(
+    async ({ deployments, getNamedAccounts, ethers }, options) => {
+        await deployments.fixture(["Token"]);
+        const { deployer, tokenOwner, upgradesAdmin } = await getNamedAccounts();
+        const contracts = {
+            Admin: await ethers.getContract("DefaultProxyAdmin"),
+            Token: await ethers.getContract("MyTokenUpgradeable"),
+            TokenImplementation: await ethers.getContract("MyTokenUpgradeable_Implementation"),
+            Token2: await ethers.getContract("Token2"),
+            Airdrop: await ethers.getContract("AirdropUpgradeable"),
+            AirdropImplementation: await ethers.getContract("AirdropUpgradeable_Implementation"),
+            Airdrop2: await ethers.getContract("Airdrop2"),
+        }
+        const users = await setupUsers(await getUnnamedAccounts(), contracts);
+        const list = [ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 10]), ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10])];
+        const merkleTree = new MerkleTree(list, keccak256, { hashLeaves: true, sortPairs: true });
+        return {
+            ...contracts,
+            users,
+            deployer: await setupUser(deployer, contracts),
+            tokenOwner: await setupUser(tokenOwner, contracts),
+            upgradesAdmin: await setupUser(upgradesAdmin, contracts),
+            merkleTree,
+        };
     }
-    const users = await setupUsers(await getUnnamedAccounts(), contracts);
-    const list = [ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 10]), ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10])];
-    const merkleTree = new MerkleTree(list, keccak256, { hashLeaves: true, sortPairs: true });
-    return {
-        ...contracts,
-        users,
-        deployer: await setupUser(deployer, contracts),
-        tokenOwner: await setupUser(tokenOwner, contracts),
-        upgradesAdmin: await setupUser(upgradesAdmin, contracts),
-        merkleTree,
-    };
-}
+);
 
 describe("Token contract", function () {
     it("Should be upgradeable, only by Admin", async function () {
