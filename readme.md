@@ -17,6 +17,7 @@ See:
 * https://github.com/wighawag/tutorial-hardhat-deploy, tutorial
 * https://www.youtube.com/watch?v=o-vSmiRzTKI, demo by the author of the plugin
 * https://www.npmjs.com/package/hardhat-deploy, package documentation
+* https://github.com/wighawag/hardhat-deploy#creating-fixtures, test fixtures, improved test time in about 40%
 
 In any case, the documentation is incomplete and googling you don't find many answers for common problems. For advanced issues you might need to ask here: https://github.com/wighawag/hardhat-deploy/issues
 
