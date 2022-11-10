@@ -7,6 +7,7 @@ This project is based on different resources found on the internet and as proof 
 * ERC20 token, upgradeable
 * Airdrop functionality, upgradeable
 * Testing with 100% coverage
+* Security audit with Slither
 
 ## Hardhat-deploy
 
@@ -68,7 +69,7 @@ Using hardhat-deploy with Chai and Mocha for the tests, and solidity-coverage to
 File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
 -------------------------|----------|----------|----------|----------|----------------|
  src/                    |      100 |      100 |      100 |      100 |                |
-  AirdropUgradeable.sol  |      100 |      100 |      100 |      100 |                |
+  AirdropUpgradeable.sol |      100 |      100 |      100 |      100 |                |
   MyTokenUpgradeable.sol |      100 |      100 |      100 |      100 |                |
 -------------------------|----------|----------|----------|----------|----------------|
 All files                |      100 |      100 |      100 |      100 |                |
@@ -77,6 +78,26 @@ See:
 * https://itnext.io/how-to-make-tests-using-chai-and-mocha-e9db7d8d48bc, Chai and Mocha tutorial
 * https://www.npmjs.com/package/solidity-coverage, package
 * https://blog.colony.io/code-coverage-for-solidity-eecfa88668c2/, developer's accompanying article
+
+## Security audit with Slither
+
+Slither is a static analysis framework, that detects potential vulnerabilies in your code.
+
+I installed it with `pip3 install slither-analyzer`, and it detected a few vulnerabilities that were addressed. After correcting them:
+
+```
+$ slither . --filter-paths "node_modules"
+
+'npx hardhat compile --force' running
+Compiled 10 Solidity files successfully
+
+. analyzed (10 contracts with 81 detectors), 0 result(s) found
+```
+
+See:
+* https://medium.com/coinmonks/slither-smart-contract-security-tools-29918df0fa8c, review
+* https://blog.trailofbits.com/2019/05/27/slither-the-leading-static-analyzer-for-smart-contracts/, blog post by the authors
+* https://github.com/crytic/slither, code and readme
 
 ## Next steps
 

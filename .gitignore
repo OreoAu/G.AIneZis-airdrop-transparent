@@ -2,6 +2,7 @@ artifacts/
 cache/
 coverage.json
 coverage/
+deployments/
 node_modules/
 .env
 .nycrc
@@ -9,3 +10,4 @@ node_modules/
 .vscode/
 *.log
 *.lock
+package-lock.json

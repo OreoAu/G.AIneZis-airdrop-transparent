@@ -4,6 +4,7 @@ import { ethers, deployments, getNamedAccounts, getUnnamedAccounts } from "hardh
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "keccak256";
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 const setup = deployments.createFixture(
     async ({ deployments, getNamedAccounts, ethers }, options) => {
@@ -209,7 +210,7 @@ describe("Airdrop contract", function () {
             expect(await Token.balanceOf(Airdrop.address)).to.equal(90);
             await expect(Airdrop.claimWeek(users[1].address, 1, 10, merkleProof)).to.be.revertedWith("Week cannot be in the future");
         });
-        it("Should expire the tranch and not allow more claims for it", async function () {
+        it("Should expire the tranch and not allow more claims for it, only owner", async function () {
             const { Token, Airdrop, users, deployer, tokenOwner, merkleTree } = await setup();
             await tokenOwner.Token.transfer(deployer.address, 1000);
             await deployer.Token.approve(Airdrop.address.toLowerCase(), 1000);
@@ -218,6 +219,7 @@ describe("Airdrop contract", function () {
             const leaf = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 10]));
             const merkleProof = merkleTree.getHexProof(leaf);
             await expect(Airdrop.claimWeek(users[0].address, 0, 10, merkleProof)).to.emit(Airdrop, "Claimed").withArgs(users[0].address, 0, 10);
+            await expect(users[0].Airdrop.expireTranche(0)).to.be.revertedWith("Ownable: caller is not the owner");
             await expect(Airdrop.expireTranche(0)).to.emit(Airdrop, "TrancheExpired").withArgs(0);
             const leaf1 = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10]));
             const merkleProof1 = merkleTree.getHexProof(leaf1);
@@ -273,6 +275,31 @@ describe("Airdrop contract", function () {
         it("Should not set token other than the owner", async function () {
             const { Airdrop, upgradesAdmin, Token } = await setup();
             await expect(upgradesAdmin.Airdrop.setToken(Token.address)).to.be.revertedWith("Ownable: caller is not the owner");
+        });
+        it("Should revert if transferFrom returns `false`", async function () {
+            const { Token, Airdrop, users, deployer, tokenOwner } = await setup();
+            let FakeToken: FakeContract<typeof Token>;
+            FakeToken = await smock.fake('MyTokenUpgradeable');
+            const list = [ethers.utils.solidityPack(["address", "uint256"], [users[0].address, 100]), ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 0])];
+            const merkleTree = new MerkleTree(list, keccak256, { hashLeaves: true, sortPairs: true });
+            await tokenOwner.Token.transfer(deployer.address, 1000);
+            await deployer.Token.approve(Airdrop.address.toLowerCase(), 1000);
+            await Airdrop.setToken(FakeToken.address);
+            // FakeToken.transferFrom.returns(false);
+            await expect(Airdrop.seedNewAllocations(merkleTree.getRoot(), 100)).to.be.revertedWith("`transferFrom` failed");
+        });
+        it("Should revert if transfer returns `false`", async function () {
+            const { Token, Airdrop, users, deployer, tokenOwner, merkleTree } = await setup();
+            let FakeToken: FakeContract<typeof Token>;
+            FakeToken = await smock.fake('MyTokenUpgradeable');
+            await tokenOwner.Token.transfer(deployer.address, 1000);
+            await deployer.Token.approve(Airdrop.address.toLowerCase(), 1000);
+            await Airdrop.seedNewAllocations(merkleTree.getRoot(), 100);
+            const leaf = keccak256(ethers.utils.solidityPack(["address", "uint256"], [users[1].address, 10]));
+            const merkleProof = merkleTree.getHexProof(leaf);
+            await Airdrop.setToken(FakeToken.address);
+            // FakeToken.transfer.returns(false);
+            await expect(Airdrop.claimWeek(users[1].address, 0, 10, merkleProof)).to.be.revertedWith("`transfer` failed");
         });
     });
 });

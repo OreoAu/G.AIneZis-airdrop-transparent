@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.10;
+pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -10,14 +10,14 @@ contract MyTokenUpgradeable is
     ERC20Upgradeable,
     OwnableUpgradeable
 {
-    function initialize(address _owner, uint256 _initial_supply)
+    function initialize(address initOwner, uint256 initialSupply)
         external
         initializer
     {
         __ERC20_init("Mojo", "MOJ");
         __Ownable_init();
-        _mint(_owner, _initial_supply);
-        _transferOwnership(_owner);
+        _mint(initOwner, initialSupply);
+        _transferOwnership(initOwner);
     }
 
     function mint(address to, uint256 amount) external onlyOwner {
