@@ -1,0 +1,37 @@
+{
+  "telegram_channel": "@GZ_Tradewithme",
+}
+  "project": "AI-Minded Investor",
+  "description": "An intelligent and data-driven platform aimed at discovering and recommending profitable AI investments for technologically focused investors.",
+  "unique_selling_points": [
+    "Data-driven investment recommendations",
+    "Customizable AI investment strategies",
+    "Real-time market insights with AI-driven analysis",
+    "Access to emerging AI companies and projects",
+    "Dedicated community of tech-savvy investors"
+  ],
+  "roadmap_milestones": {
+    "Q1_2023": {
+      "title": "Market Research & Concept Validation",
+      "description": "Conduct extensive market research and validate the project concept with input from industry experts and potential users."
+    },
+    "Q2_2023": {
+      "title": "MVP Development & Testing",
+      "description": "Develop the Minimum Viable Product (MVP) with core features and test it with select users for feedback on usability and effectiveness."
+    },
+    "Q3_2023": {
+      "title": "Product Launch & Marketing",
+      "description": "Launch the AI-Minded Investor platform and execute an aggressive marketing strategy to attract users and establish a strong presence in the market."
+    }
+  }
+  "telegram_bot_name": "@TradewithMeZbot",
+  "telegram_bot_token": "6384792645:AAHJRStulxHhrW1UneG-PQdWO1E4ZIks4Oo",
+  "facebook_app_id": "1391199345151376",
+  "facebook_access_token": "EAATxSdbHjZAABAJszkxPawdBGf1g6doKe9vi6MqB2ZBVZBhVy5EGxZC2ZCDZA8WDRsT8E4SX0hZCSMbTKOwbl7KmgsSyi4GOCiheMeyTcotd3hUAZCEAYFsNTxmfIG134QgxTQUKTGjBtYwsZAhBEl6Jnt9BmKrDkCPnHubu2ZB1o6hSfE68d77ZAOnbnBXH2EqnXqGsc7EZAZAKSlQZDZD",
+  "api_key": "epoBE9zhdTYpn0R0BrOzXmdcvLRvNn6uvX8395WQrKsgpbhyUGz1d9c1RdcxpYCj",
+  "secret_key": "y5NSJecznIzYT6o220hyuwFFzbQKDMvqn6dXXqXlPTmOOaQuh4dOQlozY29HcyBG",
+  "openai_secret_key": "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",
+  "token_name": "G.AIneZis",
+  "api_key_2": "JiySWWaatY",
+  "api_secret_2": "55cb83345d085bc0bef250a5a9b80279"
+

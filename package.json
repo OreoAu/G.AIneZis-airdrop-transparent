@@ -1,0 +1,39 @@
+{
+  "name": "financial-assistance-platform",
+  "version": "1.0.0",
+  "description": "AI-Minded Investor aims to revolutionize the investment industry by using artificial intelligence to analyze market trends, find promising startups, and create profitable investment portfolios.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "",
+  "uniqueSellingPoints": [
+    "Cutting-edge AI Algorithms for market analysis and investment opportunities.",
+    "Streamlined investment platform accessible through website, mobile app, and Telegram bot integration.",
+    "Utility token creation for incentivizing users and enabling exclusive features.",
+    "Data-driven content automation and targeted marketing strategy leveraging AI insights."
+  ],
+  "license": "",
+  "dependencies": {
+    "roadmap": {
+      "Q1 2023": [
+        "AI-driven market analysis module development.",
+        "Telegram bot integration to receive AI-driven market predictions.",
+        "Content Automation and API key integration."
+      ],
+      "Q2 2023": [
+        "Website and mobile app development & launch.",
+        "Utility token creation, integration, and promotion.",
+        "Targeted marketing strategy based on AI insights."
+      ],
+      "Q3 2023": [
+        "Partnerships with promising startups and major investment firms.",
+        "Ongoing platform maintenance, security updates, and new feature developments."
+      ]
+    },
+    "express": "latest",
+    "telegram-bot-api": "latest",
+    "axios": "latest",
+    "openai": "latest"
+  }
+}
